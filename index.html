@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>3D Modell Viewer</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/OBJLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
     <style>
         body { margin: 0; overflow: hidden; }
         canvas { display: block; touch-action: none; }
@@ -29,10 +29,10 @@
         scene.add(ambientLight);
 
         // 3D-Modell laden (angepasster Pfad für GitHub Pages)
-        const loader = new THREE.OBJLoader();
-        loader.load('https://dorgarten.github.io/3d-viewer/test.txt', function(object) {
-            scene.add(object);
-            object.position.set(0, 0, 0);
+        const loader = new THREE.GLTFLoader();
+        loader.load('https://dorgarten.github.io/3d-viewer/test.glb', function(gltf) {
+            scene.add(gltf.scene);
+            gltf.scene.position.set(0, 0, 0);
         }, undefined, function(error) {
             console.error('Fehler beim Laden des 3D-Modells:', error);
         });
