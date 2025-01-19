@@ -8,7 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/OBJLoader.js"></script>
     <style>
         body { margin: 0; overflow: hidden; }
-        canvas { display: block; }
+        canvas { display: block; touch-action: none; }
     </style>
 </head>
 <body>
@@ -16,7 +16,7 @@
         // Szene, Kamera und Renderer erstellen
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer();
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
@@ -47,23 +47,42 @@
         }
         animate();
 
-        // Maussteuerung für Drehung
+        // Maus- und Touchsteuerung für Drehung
         let isDragging = false;
-        let previousMousePosition = { x: 0, y: 0 };
+        let previousPosition = { x: 0, y: 0 };
 
-        document.addEventListener("mousedown", (event) => {
+        function startDrag(x, y) {
             isDragging = true;
-        });
-        document.addEventListener("mouseup", () => {
+            previousPosition = { x, y };
+        }
+        function endDrag() {
             isDragging = false;
-        });
-        document.addEventListener("mousemove", (event) => {
+        }
+        function moveDrag(x, y) {
             if (!isDragging) return;
-            const deltaX = event.clientX - previousMousePosition.x;
-            const deltaY = event.clientY - previousMousePosition.y;
+            const deltaX = x - previousPosition.x;
+            const deltaY = y - previousPosition.y;
             scene.rotation.y += deltaX * 0.01;
             scene.rotation.x += deltaY * 0.01;
-            previousMousePosition = { x: event.clientX, y: event.clientY };
+            previousPosition = { x, y };
+        }
+
+        // Event Listener für Maus
+        document.addEventListener("mousedown", (event) => startDrag(event.clientX, event.clientY));
+        document.addEventListener("mouseup", endDrag);
+        document.addEventListener("mousemove", (event) => moveDrag(event.clientX, event.clientY));
+
+        // Event Listener für Touch
+        document.addEventListener("touchstart", (event) => {
+            if (event.touches.length === 1) {
+                startDrag(event.touches[0].clientX, event.touches[0].clientY);
+            }
+        });
+        document.addEventListener("touchend", endDrag);
+        document.addEventListener("touchmove", (event) => {
+            if (event.touches.length === 1) {
+                moveDrag(event.touches[0].clientX, event.touches[0].clientY);
+            }
         });
     </script>
 </body>
