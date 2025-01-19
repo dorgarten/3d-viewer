@@ -31,14 +31,17 @@
         // 3D-Modell laden (angepasster Pfad für GitHub Pages)
         const loader = new THREE.GLTFLoader();
         loader.load('https://dorgarten.github.io/3d-viewer/test.glb', function(gltf) {
-            scene.add(gltf.scene);
-            gltf.scene.position.set(0, 0, 0);
+            const model = gltf.scene;
+            model.position.set(0, 0, 0);
+            model.scale.set(5, 5, 5); // Modell vergrößern
+            scene.add(model);
         }, undefined, function(error) {
             console.error('Fehler beim Laden des 3D-Modells:', error);
         });
 
         // Kamera-Position anpassen
-        camera.position.set(0, 5, 10);
+        camera.position.set(0, 5, 20);
+        camera.lookAt(0, 0, 0);
 
         // Animation & Rendering
         function animate() {
@@ -81,6 +84,7 @@
                 if (previousDistance !== 0) {
                     const delta = distance - previousDistance;
                     camera.position.z -= delta * 0.05;
+                    camera.lookAt(0, 0, 0); // Sicherstellen, dass die Kamera auf das Modell fokussiert bleibt
                 }
                 previousDistance = distance;
             }
