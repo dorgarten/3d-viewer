@@ -22,7 +22,7 @@
 
         // 3D-Modell laden (angepasster Pfad für GitHub Pages)
         const loader = new THREE.OBJLoader();
-        loader.load('https://dorgarten.github.io/3d-viewer/test.txt', function(object) {
+        loader.load('https://dorgarten.github.io/3d-viewer/test.obj', function(object) {
             scene.add(object);
             object.position.set(0, 0, 0);
         }, undefined, function(error) {
