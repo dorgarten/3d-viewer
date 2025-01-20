@@ -20,32 +20,12 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        // Mehrere Lichtquellen für bessere Beleuchtung
-        const lights = [
-            new THREE.DirectionalLight(0xffffff, 1),
-            new THREE.DirectionalLight(0xffffff, 1),
-            new THREE.DirectionalLight(0xffffff, 1),
-            new THREE.DirectionalLight(0xffffff, 1),
-            new THREE.DirectionalLight(0xffffff, 1),
-            new THREE.DirectionalLight(0xffffff, 1),
-            new THREE.DirectionalLight(0xffffff, 1),
-            new THREE.DirectionalLight(0xffffff, 1),
-            new THREE.DirectionalLight(0xffffff, 1),
-            new THREE.DirectionalLight(0xffffff, 1)
-        ];
-        
-        const positions = [
-            [50, 100, 50], [-50, 100, 50], [50, -100, 50], [-50, -100, 50],
-            [100, 50, -50], [-100, 50, -50], [100, -50, -50], [-100, -50, -50],
-            [0, 0, 100], [0, 0, -100]
-        ];
-        
-        lights.forEach((light, index) => {
-            light.position.set(...positions[index]);
-            scene.add(light);
-        });
+        // Verbesserte Beleuchtung: Eine Hauptlichtquelle und Umgebungslicht
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1.5);
+        directionalLight.position.set(10, 10, 10);
+        scene.add(directionalLight);
 
-        const ambientLight = new THREE.AmbientLight(0x404040); // Weiches Umgebungslicht
+        const ambientLight = new THREE.AmbientLight(0x808080); // Weiches Umgebungslicht
         scene.add(ambientLight);
 
         // 3D-Modell laden (angepasster Pfad für GitHub Pages)
@@ -53,7 +33,7 @@
         loader.load('https://dorgarten.github.io/3d-viewer/test.glb', function(gltf) {
             const model = gltf.scene;
             model.position.set(0, 0, 0);
-            model.scale.set(1, 1, 1); // Modell vergrößern
+            model.scale.set(1, 1, 1); // Modellgröße beibehalten
             scene.add(model);
         }, undefined, function(error) {
             console.error('Fehler beim Laden des 3D-Modells:', error);
