@@ -8,7 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <style>
-        body { margin: 0; overflow: hidden; }
+        body { margin: 0; overflow: hidden; background-color: white; }
         canvas { display: block; touch-action: none; }
     </style>
 </head>
@@ -16,6 +16,8 @@
     <script>
         // Szene, Kamera und Renderer erstellen
         const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xffffff); // Hintergrund auf Weiß setzen
+
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
@@ -64,7 +66,7 @@
 
         // Kamera-Position anpassen
         camera.position.set(0, 5, 20);
-        camera.lookAt(0, 0, 0);
+        camera.lookAt(0, 0, 2);
 
         // Animation & Rendering
         function animate() {
