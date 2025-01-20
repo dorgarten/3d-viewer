@@ -35,9 +35,9 @@
         ];
         
         const positions = [
-            [5, 10, 5], [-5, 10, 5], [5, -10, 5], [-5, -10, 5],
-            [10, 5, -5], [-10, 5, -5], [10, -5, -5], [-10, -5, -5],
-            [0, 0, 10], [0, 0, -10]
+            [50, 100, 50], [-50, 100, 50], [50, -100, 50], [-50, -100, 50],
+            [100, 50, -50], [-100, 50, -50], [100, -50, -50], [-100, -50, -50],
+            [0, 0, 100], [0, 0, -100]
         ];
         
         lights.forEach((light, index) => {
@@ -53,7 +53,7 @@
         loader.load('https://dorgarten.github.io/3d-viewer/test.glb', function(gltf) {
             const model = gltf.scene;
             model.position.set(0, 0, 0);
-            model.scale.set(5, 5, 5); // Modell vergrößern
+            model.scale.set(1, 1, 1); // Modell vergrößern
             scene.add(model);
         }, undefined, function(error) {
             console.error('Fehler beim Laden des 3D-Modells:', error);
