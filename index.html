@@ -6,6 +6,7 @@
     <title>3D Modell Viewer</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <style>
         body { margin: 0; overflow: hidden; }
         canvas { display: block; touch-action: none; }
@@ -20,15 +21,37 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        // Verbesserte Beleuchtung: Eine Hauptlichtquelle und Umgebungslicht
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 1.5);
-        directionalLight.position.set(10, 10, 10);
-        scene.add(directionalLight);
+        // OrbitControls für Drehen und Zoomen hinzufügen
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.screenSpacePanning = false;
+        controls.minDistance = 2;
+        controls.maxDistance = 50;
 
-        const ambientLight = new THREE.AmbientLight(0x808080); // Weiches Umgebungslicht
+        // Mehrere Lichtquellen für bessere Beleuchtung
+        const lights = [
+            new THREE.DirectionalLight(0xffffff, 1),
+            new THREE.DirectionalLight(0xffffff, 1),
+            new THREE.DirectionalLight(0xffffff, 1),
+            new THREE.DirectionalLight(0xffffff, 1),
+            new THREE.DirectionalLight(0xffffff, 1)
+        ];
+        
+        const positions = [
+            [10, 10, 10], [-10, 10, 10], [10, -10, 10], [-10, -10, 10],
+            [0, 10, -10]
+        ];
+        
+        lights.forEach((light, index) => {
+            light.position.set(...positions[index]);
+            scene.add(light);
+        });
+
+        const ambientLight = new THREE.AmbientLight(0x404040); // Weiches Umgebungslicht
         scene.add(ambientLight);
 
-        // 3D-Modell laden (angepasster Pfad für GitHub Pages)
+        // 3D-Modell laden
         const loader = new THREE.GLTFLoader();
         loader.load('https://dorgarten.github.io/3d-viewer/test.glb', function(gltf) {
             const model = gltf.scene;
@@ -46,6 +69,7 @@
         // Animation & Rendering
         function animate() {
             requestAnimationFrame(animate);
+            controls.update();
             renderer.render(scene, camera);
         }
         animate();
