@@ -20,12 +20,30 @@
             font-size: 20px;
             text-align: center;
         }
+        #warning-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 30px;
+            font-weight: bold;
+            color: red;
+            display: none;
+        }
+        .blinking {
+            animation: blink 1s infinite;
+        }
+        @keyframes blink {
+            50% { color: red; }
+            100% { color: white; }
+        }
     </style>
 </head>
 <body>
     <div id="info-container">
         <span id="level-info">Nr. 23 (difficult)</span> | <span id="timer">1:00</span>
     </div>
+    <div id="warning-message">30 Sekunden</div>
     <script>
         const scene = new THREE.Scene();
         scene.background = new THREE.Color("#CFDCBD");
@@ -88,7 +106,21 @@
         function updateTimer() {
             const minutes = Math.floor(timeLeft / 60);
             const seconds = timeLeft % 60;
-            document.getElementById("timer").textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            const timerElement = document.getElementById("timer");
+            timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+            if (timeLeft === 30) {
+                const warningMessage = document.getElementById("warning-message");
+                warningMessage.style.display = "block";
+                setTimeout(() => {
+                    warningMessage.style.display = "none";
+                }, 1000);
+            }
+
+            if (timeLeft <= 10) {
+                timerElement.classList.add("blinking");
+            }
+
             if (timeLeft > 0) {
                 timeLeft--;
                 setTimeout(updateTimer, 1000);
