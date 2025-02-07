@@ -93,7 +93,7 @@
                 timeLeft--;
                 setTimeout(updateTimer, 1000);
             } else {
-                document.getElementById("info-container").innerHTML = "Die Zeit ist um, hier ist die Lösung";
+                document.getElementById("info-container").innerHTML = "Die Zeit ist um! Hier ist die Lösung";
                 scene.remove(model);
                 loader.load('https://dorgarten.github.io/3d-viewer/Figur10b.glb', function(gltf) {
                     model = gltf.scene;
