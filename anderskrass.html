@@ -10,34 +10,44 @@
     <style>
         body { margin: 0; overflow: hidden; background-color: #CFDCBD; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
         canvas { display: block; touch-action: none; }
-        #info-container { 
-            position: absolute; 
-            bottom: 20px; 
-            background: rgba(0, 0, 0, 0.7); 
-            color: white; 
-            padding: 10px 20px; 
-            border-radius: 10px; 
-            font-size: 20px;
-            text-align: center;
-        }
-        #stop-button {
+        .navbar, .bottombar {
             position: absolute;
-            bottom: 60px;
-            padding: 10px 20px;
-            font-size: 18px;
-            cursor: pointer;
-            background-color: #007BFF;
+            width: 100%;
+            height: 50px;
+            background: rgba(0, 0, 0, 0.8);
             color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            font-size: 20px;
+        }
+        .navbar { top: 0; }
+        .bottombar { bottom: 0; }
+        .timer {
+            font-size: 20px;
+        }
+        .blinking { animation: blink 1s infinite; }
+        @keyframes blink { 50% { color: red; } 100% { color: white; } }
+        .pause-button {
+            background: red;
             border: none;
+            color: white;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
             border-radius: 5px;
         }
     </style>
 </head>
 <body>
-    <div id="info-container">
-        <span id="level-info">Nr. 23 (difficult)</span> | <span id="timer">0:00</span>
+    <div class="navbar">
+        <img src="logo.png" alt="Spiel-Logo" height="40">
     </div>
-    <button id="stop-button">Stop</button>
+    <div class="bottombar">
+        <span id="timer" class="timer">0:00</span>
+        <button class="pause-button" onclick="togglePause()">Pause</button>
+    </div>
     <script>
         const scene = new THREE.Scene();
         scene.background = new THREE.Color("#CFDCBD");
@@ -50,7 +60,6 @@
         const controls = new THREE.OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
         controls.dampingFactor = 0.05;
-        controls.screenSpacePanning = false;
         controls.minDistance = 2;
         controls.maxDistance = 50;
 
@@ -96,38 +105,30 @@
         }
         animate();
 
-        let elapsedTime = 0;
-        let timerRunning = true;
+        let timeElapsed = 0;
+        let timerInterval;
+        let paused = false;
+
         function updateTimer() {
-            if (!timerRunning) return;
-            const minutes = Math.floor(elapsedTime / 60);
-            const seconds = elapsedTime % 60;
-            document.getElementById("timer").textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-            elapsedTime++;
-            setTimeout(updateTimer, 1000);
+            const minutes = Math.floor(timeElapsed / 60);
+            const seconds = timeElapsed % 60;
+            const timerElement = document.getElementById("timer");
+            timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            timeElapsed++;
+            if (!paused) {
+                timerInterval = setTimeout(updateTimer, 1000);
+            }
         }
         updateTimer();
 
-        document.getElementById("stop-button").addEventListener("click", function() {
-            timerRunning = false;
-            scene.remove(model);
-            loader.load('https://dorgarten.github.io/3d-viewer/Figur10b.glb', function(gltf) {
-                model = gltf.scene;
-                model.position.set(0, -5, 0);
-                model.scale.set(1, 1, 1);
-                scene.add(model);
-            }, undefined, function(error) {
-                console.error('Fehler beim Laden der Lösung:', error);
-            });
-
-            let stars = "★";
-            if (elapsedTime <= 60) {
-                stars = "★★★";
-            } else if (elapsedTime <= 120) {
-                stars = "★★";
+        function togglePause() {
+            paused = !paused;
+            if (paused) {
+                clearTimeout(timerInterval);
+            } else {
+                updateTimer();
             }
-            document.getElementById("info-container").innerHTML = stars;
-        });
+        }
     </script>
 </body>
 </html>
