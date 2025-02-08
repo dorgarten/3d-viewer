@@ -8,42 +8,42 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <style>
-        body { margin: 0; overflow: hidden; background-color: #CFDCBD; display: flex; flex-direction: column; align-items: center; justify-content: space-between; height: 100vh; }
+        body { margin: 0; overflow: hidden; background-color: #CFDCBD; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
         canvas { display: block; touch-action: none; }
-        #top-bar, #bottom-bar { 
-            position: absolute; 
-            width: 100%; 
-            background: rgba(0, 0, 0, 0.7); 
-            color: white; 
-            padding: 10px 0; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
+        .nav-bar, .bottom-bar {
+            position: absolute;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
         }
-        #top-bar { top: 0; height: 80px; }
-        #bottom-bar { bottom: 0; height: 50px; justify-content: space-between; padding: 0 20px; }
-        #logo { height: 50px; }
-        .time-container, .button-container { display: flex; align-items: center; }
-        #pause-btn { margin: 0 auto; }
-        #stop-btn { font-weight: bold; color: red; margin-left: auto; }
+        .nav-bar { top: 0; height: 80px; }
+        .bottom-bar { bottom: 0; height: 50px; }
+        .logo { height: 50px; margin: auto; }
+        .time { margin-left: 20px; font-size: 20px; }
+        .button-container { display: flex; align-items: center; gap: 20px; }
+        .stop-button { font-weight: bold; color: red; font-size: 20px; cursor: pointer; }
         .blinking { animation: blink 1s infinite; }
         @keyframes blink { 50% { color: red; } 100% { color: white; } }
     </style>
 </head>
 <body>
-    <div id="top-bar">
-        <img id="logo" src="logo.png" alt="Logo">
+    <div class="nav-bar">
+        <img src="logo.png" alt="Logo" class="logo">
     </div>
-    <canvas id="canvas"></canvas>
-    <div id="bottom-bar">
-        <span id="timer">0:00</span>
-        <button id="pause-btn">⏸</button>
-        <button id="stop-btn">Stop</button>
+    <div class="bottom-bar">
+        <span class="time" id="timer">0:00</span>
+        <div class="button-container">
+            <span id="pause-play" style="cursor: pointer; font-size: 24px;">⏸️</span>
+            <span id="stop" class="stop-button">STOP</span>
+        </div>
     </div>
     <script>
         const scene = new THREE.Scene();
         scene.background = new THREE.Color("#CFDCBD");
-
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
@@ -52,7 +52,6 @@
         const controls = new THREE.OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
         controls.dampingFactor = 0.05;
-        controls.screenSpacePanning = false;
         controls.minDistance = 2;
         controls.maxDistance = 50;
 
@@ -65,8 +64,7 @@
         ];
 
         const positions = [
-            [10, 10, 10], [-10, 10, 10], [10, -10, 10], [-10, -10, 10],
-            [0, 10, -10]
+            [10, 10, 10], [-10, 10, 10], [10, -10, 10], [-10, -10, 10], [0, 10, -10]
         ];
 
         lights.forEach((light, index) => {
@@ -81,7 +79,7 @@
         const loader = new THREE.GLTFLoader();
         loader.load('https://dorgarten.github.io/3d-viewer/Figur10.glb', function(gltf) {
             model = gltf.scene;
-            model.position.set(0, -8, 0);
+            model.position.set(0, -5, 0);
             model.scale.set(1, 1, 1);
             scene.add(model);
         }, undefined, function(error) {
@@ -97,6 +95,58 @@
             renderer.render(scene, camera);
         }
         animate();
+
+        let time = 0;
+        let timerInterval;
+        let paused = false;
+
+        function updateTimer() {
+            const minutes = Math.floor(time / 60);
+            const seconds = time % 60;
+            const timerElement = document.getElementById("timer");
+            timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            
+            if (time >= 210) {
+                timerElement.classList.add("blinking");
+            }
+            
+            if (!paused) {
+                time++;
+                timerInterval = setTimeout(updateTimer, 1000);
+            }
+        }
+        updateTimer();
+
+        document.getElementById("pause-play").addEventListener("click", function() {
+            paused = !paused;
+            if (paused) {
+                clearTimeout(timerInterval);
+                this.textContent = "▶️";
+            } else {
+                this.textContent = "⏸️";
+                updateTimer();
+            }
+        });
+
+        document.getElementById("stop").addEventListener("click", function() {
+            clearTimeout(timerInterval);
+            document.getElementById("pause-play").style.display = "none";
+            document.getElementById("stop").style.display = "none";
+            let message = "";
+            if (time <= 60) message = "⭐⭐⭐";
+            else if (time <= 120) message = "⭐⭐";
+            else if (time <= 240) message = "⭐";
+            else message = "Timeout";
+            
+            document.querySelector(".bottom-bar").innerHTML = `<span style="font-size: 24px;">${message}</span>`;
+            scene.remove(model);
+            loader.load('https://dorgarten.github.io/3d-viewer/Figur10b.glb', function(gltf) {
+                model = gltf.scene;
+                model.position.set(0, -5, 0);
+                model.scale.set(1, 1, 1);
+                scene.add(model);
+            });
+        });
     </script>
 </body>
 </html>
