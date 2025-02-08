@@ -10,95 +10,39 @@
     <style>
         body { margin: 0; overflow: hidden; background-color: #CFDCBD; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
         canvas { display: block; touch-action: none; }
-        .nav-bar, .bottom-bar {
-            position: absolute;
-            width: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 15px;
+        .toolbar { 
+            position: absolute; 
+            width: 100%; 
+            height: 80px; 
+            background: rgba(0, 0, 0, 0.7); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
         }
-        .nav-bar { top: 0; height: 80px; }
-        .bottom-bar { bottom: 0; height: 50px; }
-        .logo { height: 50px; margin: auto; }
-        .time { margin-left: 20px; font-size: 20px; }
-        .button-container { display: flex; align-items: center; gap: 20px; }
-        .stop-button { font-weight: bold; color: red; font-size: 20px; cursor: pointer; }
+        #top-bar img { height: 60px; }
+        #bottom-bar { bottom: 0; }
+        #bottom-bar span, button { margin: 0 15px; }
+        .timer { flex: 1; text-align: left; color: white; font-size: 20px; margin-left: 20px; }
+        .controls { flex: 1; text-align: center; }
+        .stop-btn { flex: 1; text-align: right; margin-right: 20px; font-weight: bold; color: red; }
         .blinking { animation: blink 1s infinite; }
         @keyframes blink { 50% { color: red; } 100% { color: white; } }
     </style>
 </head>
 <body>
-    <div class="nav-bar">
-        <img src="logo.png" alt="Logo" class="logo">
-    </div>
-    <div class="bottom-bar">
-        <span class="time" id="timer">0:00</span>
-        <div class="button-container">
-            <span id="pause-play" style="cursor: pointer; font-size: 24px;">⏸️</span>
-            <span id="stop" class="stop-button">STOP</span>
+    <div id="top-bar" class="toolbar"><img src="logo.png" alt="Logo"></div>
+    <div id="bottom-bar" class="toolbar">
+        <span id="timer" class="timer">0:00</span>
+        <div class="controls">
+            <button id="pause-play"><span>&#10074;&#10074;</span></button>
         </div>
+        <button id="stop-btn" class="stop-btn">Stop</button>
     </div>
     <script>
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color("#CFDCBD");
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        document.body.appendChild(renderer.domElement);
-
-        const controls = new THREE.OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
-        controls.dampingFactor = 0.05;
-        controls.minDistance = 2;
-        controls.maxDistance = 50;
-
-        const lights = [
-            new THREE.DirectionalLight(0xffffff, 1),
-            new THREE.DirectionalLight(0xffffff, 1),
-            new THREE.DirectionalLight(0xffffff, 1),
-            new THREE.DirectionalLight(0xffffff, 1),
-            new THREE.DirectionalLight(0xffffff, 1)
-        ];
-
-        const positions = [
-            [10, 10, 10], [-10, 10, 10], [10, -10, 10], [-10, -10, 10], [0, 10, -10]
-        ];
-
-        lights.forEach((light, index) => {
-            light.position.set(...positions[index]);
-            scene.add(light);
-        });
-
-        const ambientLight = new THREE.AmbientLight(0x404040);
-        scene.add(ambientLight);
-
-        let model;
-        const loader = new THREE.GLTFLoader();
-        loader.load('https://dorgarten.github.io/3d-viewer/Figur10.glb', function(gltf) {
-            model = gltf.scene;
-            model.position.set(0, -5, 0);
-            model.scale.set(1, 1, 1);
-            scene.add(model);
-        }, undefined, function(error) {
-            console.error('Fehler beim Laden des 3D-Modells:', error);
-        });
-
-        camera.position.set(0, 5, 20);
-        camera.lookAt(0, 0, 2);
-
-        function animate() {
-            requestAnimationFrame(animate);
-            controls.update();
-            renderer.render(scene, camera);
-        }
-        animate();
-
         let time = 0;
         let timerInterval;
-        let paused = false;
+        let isPaused = false;
+        let model, controls;
 
         function updateTimer() {
             const minutes = Math.floor(time / 60);
@@ -106,47 +50,70 @@
             const timerElement = document.getElementById("timer");
             timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
             
-            if (time >= 210) {
-                timerElement.classList.add("blinking");
-            }
-            
-            if (!paused) {
-                time++;
-                timerInterval = setTimeout(updateTimer, 1000);
-            }
+            if (time >= 210) timerElement.classList.add("blinking");
+            time++;
         }
-        updateTimer();
-
-        document.getElementById("pause-play").addEventListener("click", function() {
-            paused = !paused;
-            if (paused) {
-                clearTimeout(timerInterval);
-                this.textContent = "▶️";
+        
+        function togglePause() {
+            if (isPaused) {
+                timerInterval = setInterval(updateTimer, 1000);
+                controls.enabled = true;
+                document.getElementById("pause-play").innerHTML = "&#10074;&#10074;";
             } else {
-                this.textContent = "⏸️";
-                updateTimer();
+                clearInterval(timerInterval);
+                controls.enabled = false;
+                document.getElementById("pause-play").innerHTML = "&#9658;";
             }
-        });
+            isPaused = !isPaused;
+        }
 
-        document.getElementById("stop").addEventListener("click", function() {
-            clearTimeout(timerInterval);
-            document.getElementById("pause-play").style.display = "none";
-            document.getElementById("stop").style.display = "none";
-            let message = "";
-            if (time <= 60) message = "⭐⭐⭐";
-            else if (time <= 120) message = "⭐⭐";
-            else if (time <= 240) message = "⭐";
-            else message = "Timeout";
-            
-            document.querySelector(".bottom-bar").innerHTML = `<span style="font-size: 24px;">${message}</span>`;
-            scene.remove(model);
-            loader.load('https://dorgarten.github.io/3d-viewer/Figur10b.glb', function(gltf) {
+        function stopTimer() {
+            clearInterval(timerInterval);
+            document.getElementById("bottom-bar").innerHTML = calculateStars(time);
+            loadModel('Figur10b.glb');
+        }
+
+        function calculateStars(time) {
+            if (time <= 60) return "⭐⭐⭐";
+            if (time <= 120) return "⭐⭐";
+            if (time <= 240) return "⭐";
+            return "Timeout";
+        }
+
+        function loadModel(path) {
+            const loader = new THREE.GLTFLoader();
+            loader.load(path, function(gltf) {
+                if (model) scene.remove(model);
                 model = gltf.scene;
-                model.position.set(0, -5, 0);
-                model.scale.set(1, 1, 1);
                 scene.add(model);
             });
-        });
+        }
+
+        document.getElementById("pause-play").addEventListener("click", togglePause);
+        document.getElementById("stop-btn").addEventListener("click", stopTimer);
+
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color("#CFDCBD");
+        
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        
+        loadModel('Figur10.glb');
+        camera.position.set(0, 5, 20);
+        
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        timerInterval = setInterval(updateTimer, 1000);
     </script>
 </body>
 </html>
